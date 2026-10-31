@@ -1,6 +1,6 @@
 # 🌽 Cornhole Scorekeeper
 
-Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók és reklám nélkül, internet nélkül is működik.
+Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók és reklám nélkül.
 
 ## Funkciók
 
@@ -13,7 +13,7 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 - **Körök története** – az előző körök táblázata lyuk/palán/nettó bontásban.
 - **Statisztikák** – összpontszám, átlag pont/kör, lyuk és palán arány (%), összes dobott zsák.
 - **Szabályok** – gyors ACL referencia a meccs közben.
-- **Telepíthető (PWA)** – kezdőképernyőre tehető, teljes képernyőn fut, offline is indul.
+- **Offline** – egyetlen fájl, internet nélkül is fut.
 
 ## Használat
 
@@ -37,33 +37,18 @@ python3 -m http.server 8000
 
 Ezután: <http://localhost:8000>
 
-A service worker (offline mód) és a telepítés csak HTTPS-en vagy `localhost`-on működik. Ha az `index.html`-t közvetlenül fájlként nyitod meg, az app ettől még teljes értékűen használható.
+Az `index.html` közvetlenül fájlként megnyitva is teljes értékűen működik.
 
-## Telepítés telefonra
+## Használat telefonon
 
-**Android (Chrome):** menü (⋮) → *Telepítés* vagy *Hozzáadás a kezdőképernyőhöz*.
-**iPhone (Safari):** Megosztás → *Hozzáadás a főképernyőhöz*.
-
-Ehhez az appot HTTPS-en kell elérhetővé tenni (lásd lent), vagy a fájlt letöltve a böngészőből megnyitni.
-
-## Közzététel (opcionális)
-
-A repó statikus oldalként bármely tárhelyen futtatható:
-
-- **GitHub Pages:** *Settings → Pages → Deploy from a branch → `main` / `(root)`*. Privát repónál ehhez fizetős GitHub-csomag kell.
-- **Cloudflare Pages / Netlify:** a repó összekötése után build parancs nélkül, a gyökérkönyvtárból szolgálja ki.
-- **Saját szerver:** a mappát tedd egy nginx/Caddy által kiszolgált könyvtárba.
+Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), majd nyisd meg a böngészőben. Internet nem kell hozzá. A böngésző menüjéből a *Hozzáadás a kezdőképernyőhöz* paranccsal parancsikon tehető ki.
 
 ## Fájlok
 
 | Fájl | Tartalom |
 |---|---|
 | `index.html` | A teljes app (HTML, CSS, JavaScript egyben) |
-| `manifest.json` | PWA leíró: név, ikonok, színek |
-| `sw.js` | Service worker az offline működéshez |
-| `icon.svg`, `icon-192.png`, `icon-512.png` | Appikonok |
-
-Ha módosítod a fájlokat, a `sw.js`-ben emeld a `CACHE` verzióját (`cornhole-v2`, …), különben a telefonok a régi változatot mutatják.
+| `manifest.json`, `sw.js`, `icon*.svg/png` | Opcionális: csak akkor kellenek, ha az appot egyszer HTTPS-en akarod kiszolgálni (telepíthető PWA). Az app nélkülük is működik. |
 
 ## Pontozás röviden
 

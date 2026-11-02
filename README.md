@@ -71,3 +71,8 @@ Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), maj
 ## Licenc
 
 [MIT](LICENSE)
+
+## Mesterséges intelligencia
+
+> **Ezt az appot mesterséges intelligencia készítette.** A teljes kódot, az ikonokat és ezt a dokumentációt az Anthropic **Claude** nevű MI-asszisztense írta (Claude Code, Claude Sonnet 5.5), `nomadbeni` kérésére és irányításával. A működést automatizált böngészős teszttel ellenőriztük, de hibák előfordulhatnak.
+

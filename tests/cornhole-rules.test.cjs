@@ -9,10 +9,10 @@ assert.ok(match, 'inline application script exists');
 
 const context = { navigator: {} };
 vm.runInNewContext(
-  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml };',
+  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound };',
   context
 );
-const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml } = context.rules;
+const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound } = context.rules;
 
 test('a team can record up to four bags in one round', () => {
   const round = [0, 0, 0, 0];
@@ -61,4 +61,17 @@ test('saved round validation rejects malformed and over-limit data', () => {
 test('team names are escaped before HTML rendering', () => {
   assert.equal(escapeHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
   assert.equal(escapeHtml("A&B \"team\""), 'A&amp;B &quot;team&quot;');
+});
+
+test('undo removes exactly the latest saved round', () => {
+  const rounds = [[1, 0, 0, 0], [0, 1, 0, 0]];
+  assert.equal(undoLastRound(rounds), true);
+  assert.deepEqual(rounds, [[1, 0, 0, 0]]);
+});
+
+test('undo safely handles an empty or invalid history', () => {
+  const rounds = [];
+  assert.equal(undoLastRound(rounds), false);
+  assert.equal(undoLastRound(null), false);
+  assert.deepEqual(rounds, []);
 });

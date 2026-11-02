@@ -263,13 +263,13 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
     <table class="history-table">
       <thead>
         <tr>
-          <th>Kör</th>
-          <th style="color:#e74c3c">Lyuk</th>
-          <th style="color:#e74c3c">Palán</th>
-          <th style="color:#e74c3c">Net</th>
-          <th style="color:#5dade2">Lyuk</th>
-          <th style="color:#5dade2">Palán</th>
-          <th style="color:#5dade2">Net</th>
+          <th id="history-round-head">Kör</th>
+          <th id="history-hole1-head" style="color:#e74c3c">Lyuk</th>
+          <th id="history-board1-head" style="color:#e74c3c">Palán</th>
+          <th id="history-net1-head" style="color:#e74c3c">Net</th>
+          <th id="history-hole2-head" style="color:#5dade2">Lyuk</th>
+          <th id="history-board2-head" style="color:#5dade2">Palán</th>
+          <th id="history-net2-head" style="color:#5dade2">Net</th>
         </tr>
       </thead>
       <tbody id="history-body"></tbody>
@@ -469,7 +469,18 @@ function undoLastRound(roundList){
 }
 
 function undoRound(){
-  if(!gameActive||!undoLastRound(rounds))return;
+  if(!gameActive||rounds.length===0)return;
+  if(currentMatchArchived){
+    var scores=getScores(),team1=document.getElementById('g-name1').textContent,team2=document.getElementById('g-name2').textContent;
+    for(var i=completedMatches.length-1;i>=0;i--){
+      var m=completedMatches[i];
+      if(m.team1===team1&&m.team2===team2&&m.mode===gameMode&&m.score1===scores[0]&&m.score2===scores[1]){
+        completedMatches.splice(i,1);break;
+      }
+    }
+    currentMatchArchived=false;
+  }
+  if(!undoLastRound(rounds))return;
   currentRound=[0,0,0,0];
   renderGame();
   saveState();
@@ -559,7 +570,11 @@ function loadState(){
 function isValidArchivedMatch(m){return !!m&&typeof m.date==='string'&&typeof m.team1==='string'&&typeof m.team2==='string'&&Array.isArray(m.players1)&&Array.isArray(m.players2)&&Number.isInteger(m.score1)&&Number.isInteger(m.score2)&&(m.winner===0||m.winner===1)&&['acl','simple'].includes(m.mode);}
 function archiveCurrentMatch(){if(currentMatchArchived||!isGameFinished())return;var scores=getScores(),winner=getWinner(scores,targetScore);if(winner===null)return;completedMatches.push({date:new Date().toISOString(),mode:gameMode,team1:document.getElementById('g-name1').textContent,team2:document.getElementById('g-name2').textContent,players1:[document.getElementById('player1a').value,document.getElementById('player1b').value].filter(Boolean),players2:[document.getElementById('player2a').value,document.getElementById('player2b').value].filter(Boolean),score1:scores[0],score2:scores[1],winner:winner,rounds:rounds.length});completedMatches=completedMatches.slice(-100);currentMatchArchived=true;}
 function renderLongTermStats(){var html='<div class="section-label">'+t('archive')+'</div>';if(!completedMatches.length)return html+'<div class="empty-state">'+t('noArchive')+'</div>';var players={};completedMatches.forEach(function(m){[[m.players1,m.score1,m.winner===0],[m.players2,m.score2,m.winner===1]].forEach(function(team){team[0].forEach(function(name){if(!name)return;if(!players[name])players[name]={played:0,wins:0,points:0};players[name].played++;players[name].points+=team[1];if(team[2])players[name].wins++;});});});html+='<div class="stats-grid"><div class="stat-card"><div class="stat-val">'+completedMatches.length+'</div><div class="stat-lbl">'+t('matches')+'</div></div><div class="stat-card"><div class="stat-val">'+Object.keys(players).length+'</div><div class="stat-lbl">'+t('playerStats')+'</div></div></div><div class="section-label">'+t('playerStats')+'</div><div class="rule-card">';Object.keys(players).sort().forEach(function(name){var p=players[name];html+='<div class="player-stat-row"><strong>'+escapeHtml(name)+'</strong><span>'+p.played+' '+t('matches')+' · '+p.wins+' '+t('wins')+' · '+p.points+t('points')+'</span></div>';});html+='</div><div class="section-label">'+t('archive')+'</div><div class="archive-list">';completedMatches.slice().reverse().forEach(function(m){var date=new Date(m.date).toLocaleDateString(language==='hu'?'hu-HU':'en-GB');html+='<div class="archive-item"><strong>'+escapeHtml(m.team1)+' '+m.score1+' – '+m.score2+' '+escapeHtml(m.team2)+'</strong><div>'+date+' · '+(m.mode==='acl'?'ACL':'Simple')+' · '+m.rounds+' '+t('round')+'</div></div>';});return html+'</div>';}
-function applyLanguage(){document.documentElement.lang=language;document.getElementById('lang-toggle').textContent=language==='hu'?'EN':'HU';['nav-match','nav-stats','nav-rules'].forEach(function(id,i){document.getElementById(id).textContent=t(['match','stats','rules'][i]);});['setup-mode-label','setup-team-label','setup-player-label','setup-target-label'].forEach(function(id,i){document.getElementById(id).textContent=t(['mode','teams','players','target'][i]);});document.getElementById('mode-acl-desc').textContent=t('acl');document.getElementById('mode-simple-title').textContent=t('simple');document.getElementById('mode-simple-desc').textContent=t('simpleDesc');document.getElementById('target-label').textContent=t('targetHint');document.getElementById('start-button').textContent=t('start');document.getElementById('bag-hole-label').textContent=t('hole')+' — 3 pt';document.getElementById('bag-board-label').textContent=t('board')+' — 1 pt';document.getElementById('net-label').textContent=t('net');document.getElementById('save-round-button').textContent=t('save');document.getElementById('new-match-button').textContent=t('newMatch');document.getElementById('undo-button').textContent=t('undo');document.getElementById('history-label').textContent=t('history');document.getElementById('pwa-update-text').textContent=t('pwa');document.getElementById('pwa-update-button').textContent=t('update');document.getElementById('player1a').placeholder=language==='hu'?'Piros csapat – 1. játékos':'Red team – Player 1';document.getElementById('player1b').placeholder=language==='hu'?'Piros csapat – 2. játékos':'Red team – Player 2';document.getElementById('player2a').placeholder=language==='hu'?'Kék csapat – 1. játékos':'Blue team – Player 1';document.getElementById('player2b').placeholder=language==='hu'?'Kék csapat – 2. játékos':'Blue team – Player 2';document.getElementById('screen-rules').innerHTML=WORDS[language].rulesHtml;document.getElementById('g-target').textContent=t('targetPrefix')+targetScore;if(gameActive)renderGame(true);if(document.getElementById('screen-stats').classList.contains('active'))renderStats();saveState();}
+function applyLanguage(){document.documentElement.lang=language;document.getElementById('lang-toggle').textContent=language==='hu'?'EN':'HU';['nav-match','nav-stats','nav-rules'].forEach(function(id,i){document.getElementById(id).textContent=t(['match','stats','rules'][i]);});['setup-mode-label','setup-team-label','setup-player-label','setup-target-label'].forEach(function(id,i){document.getElementById(id).textContent=t(['mode','teams','players','target'][i]);});document.getElementById('mode-acl-desc').textContent=t('acl');document.getElementById('mode-simple-title').textContent=t('simple');document.getElementById('mode-simple-desc').textContent=t('simpleDesc');document.getElementById('target-label').textContent=t('targetHint');document.getElementById('start-button').textContent=t('start');document.getElementById('bag-hole-label').textContent=t('hole')+' — 3 pt';document.getElementById('bag-board-label').textContent=t('board')+' — 1 pt';document.getElementById('net-label').textContent=t('net');document.getElementById('save-round-button').textContent=t('save');document.getElementById('new-match-button').textContent=t('newMatch');document.getElementById('undo-button').textContent=t('undo');document.getElementById('history-label').textContent=t('history');
+ ['history-round-head','history-hole1-head','history-hole2-head'].forEach(function(id){document.getElementById(id).textContent=language==='hu'?(id==='history-round-head'?'Kör':'Lyuk'):(id==='history-round-head'?'Round':'Hole');});
+ ['history-board1-head','history-board2-head'].forEach(function(id){document.getElementById(id).textContent=t('board');});
+ ['history-net1-head','history-net2-head'].forEach(function(id){document.getElementById(id).textContent='Net';});
+ document.getElementById('pwa-update-text').textContent=t('pwa');document.getElementById('pwa-update-button').textContent=t('update');document.getElementById('player1a').placeholder=language==='hu'?'Piros csapat – 1. játékos':'Red team – Player 1';document.getElementById('player1b').placeholder=language==='hu'?'Piros csapat – 2. játékos':'Red team – Player 2';document.getElementById('player2a').placeholder=language==='hu'?'Kék csapat – 1. játékos':'Blue team – Player 1';document.getElementById('player2b').placeholder=language==='hu'?'Kék csapat – 2. játékos':'Blue team – Player 2';document.getElementById('screen-rules').innerHTML=WORDS[language].rulesHtml;document.getElementById('g-target').textContent=t('targetPrefix')+targetScore;if(gameActive)renderGame(true);if(document.getElementById('screen-stats').classList.contains('active'))renderStats();saveState();}
 function toggleLanguage(){language=language==='hu'?'en':'hu';applyLanguage();}
 function registerPwa(){navigator.serviceWorker.register('sw.js').then(function(reg){function waiting(){if(reg.waiting&&navigator.serviceWorker.controller){pendingPwaWorker=reg.waiting;document.getElementById('pwa-update').classList.add('show');}}waiting();reg.addEventListener('updatefound',function(){var worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller){pendingPwaWorker=worker;document.getElementById('pwa-update').classList.add('show');}});});}).catch(function(error){console.warn('PWA registration failed:',error);});navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloadingForPwa)return;reloadingForPwa=true;window.location.reload();});}
 function applyPwaUpdate(){if(pendingPwaWorker)pendingPwaWorker.postMessage({type:'SKIP_WAITING'});}

@@ -322,8 +322,20 @@ function startGame(){
   showScreen('game');
 }
 
+function isGameFinished(){
+  var scores=getScores();
+  return (scores[0]>=targetScore&&scores[0]>scores[1])||
+    (scores[1]>=targetScore&&scores[1]>scores[0]);
+}
+
 function adj(team,type,delta){
-  currentRound[team*2+type]=Math.max(0,currentRound[team*2+type]+delta);
+  if(!gameActive||isGameFinished())return;
+  if((team!==0&&team!==1)||(type!==0&&type!==1))return;
+  var index=team*2+type;
+  var next=Math.max(0,currentRound[index]+delta);
+  var teamTotal=currentRound[team*2]+currentRound[team*2+1];
+  if(delta>0&&teamTotal>=4)return;
+  currentRound[index]=next;
   renderCurrentRound();
 }
 
@@ -381,10 +393,18 @@ function renderGame(){
     tbody.appendChild(tr);
   }
   document.getElementById('history-section').style.display=rounds.length>0?'block':'none';
+  var finished=isGameFinished();
+  document.querySelectorAll('.bag-btn').forEach(function(button){button.disabled=finished;});
+  var saveButton=document.querySelector('.action-btn.primary');
+  if(saveButton)saveButton.disabled=finished;
 }
 
 function confirmRound(){
-  if(currentRound[0]+currentRound[1]+currentRound[2]+currentRound[3]===0)return;
+  if(!gameActive||isGameFinished())return;
+  var team1Bags=currentRound[0]+currentRound[1];
+  var team2Bags=currentRound[2]+currentRound[3];
+  if(team1Bags>4||team2Bags>4)return;
+  if(team1Bags+team2Bags===0)return;
   rounds.push(currentRound.slice());
   renderGame();
 }

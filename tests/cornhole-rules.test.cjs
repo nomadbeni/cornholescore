@@ -10,10 +10,10 @@ assert.ok(match, 'inline application script exists');
 const context = { navigator: {} };
 vm.runInNewContext(
   match[1].split("document.getElementById('name1').addEventListener('input',saveState);")[0] +
-    '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound };',
+    '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS };',
   context
 );
-const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound } = context.rules;
+const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS } = context.rules;
 
 test('a team can record up to four bags in one round', () => {
   const round = [0, 0, 0, 0];
@@ -75,4 +75,30 @@ test('undo safely handles an empty or invalid history', () => {
   assert.equal(undoLastRound(rounds), false);
   assert.equal(undoLastRound(null), false);
   assert.deepEqual(rounds, []);
+});
+
+test('completed match archive validation rejects malformed entries', () => {
+  const valid = {
+    date: '2026-11-02T10:00:00.000Z', mode: 'acl',
+    team1: 'Red', team2: 'Blue', players1: ['A'], players2: ['B'],
+    score1: 21, score2: 18, winner: 0, rounds: 8
+  };
+  assert.equal(isValidArchivedMatch(valid), true);
+  assert.equal(isValidArchivedMatch({...valid, winner: 2}), false);
+  assert.equal(isValidArchivedMatch({...valid, mode: 'unknown'}), false);
+  assert.equal(isValidArchivedMatch({...valid, score1: '21'}), false);
+  assert.equal(isValidArchivedMatch(null), false);
+});
+
+test('Hungarian and English UI dictionaries contain core labels', () => {
+  assert.equal(WORDS.hu.match, 'Meccs');
+  assert.equal(WORDS.en.match, 'Match');
+  assert.equal(WORDS.hu.archive, 'Korábbi mérkőzések');
+  assert.equal(WORDS.en.archive, 'Match history');
+});
+
+test('language lookup falls back to Hungarian for missing keys', () => {
+  context.language = 'en';
+  assert.equal(t('match'), 'Match');
+  assert.equal(t('nonexistent-key'), 'nonexistent-key');
 });

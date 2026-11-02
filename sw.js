@@ -1,5 +1,5 @@
 // Egyszerű offline gyorsítótár: az app internet nélkül is indul.
-var CACHE = 'cornhole-v3';
+var CACHE = 'cornhole-v4';
 var FILES = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {

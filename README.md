@@ -11,6 +11,9 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 - **Kör nettó** – mentés előtt élőben látszik, mennyit ér a kör.
 - **Célpontszám** – alapértelmezetten 21, 11 és 50 között állítható.
 - **Körök története** – az előző körök táblázata lyuk/palán/nettó bontásban.
+- **Visszavonás** – az utolsó mentett kör visszaállítható.
+- **Automatikus mentés** – a meccs állása, csapatnevek és beállítások a böngésző `localStorage` tárhelyére kerülnek; újratöltés után a folyamatban lévő meccs folytatható.
+- **Biztonságos csapatnevek** – a statisztikai nézet HTML-kódként nem értelmezi a megadott neveket.
 - **Statisztikák** – összpontszám, átlag pont/kör, lyuk és palán arány (%), összes dobott zsák.
 - **Szabályok** – gyors ACL referencia a meccs közben.
 - **Offline** – egyetlen fájl, internet nélkül is fut.
@@ -22,7 +25,8 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 3. A felső sáv mutatja az állást; a cél elérésekor megjelenik a győztes.
 4. **Stat** fülön a meccs statisztikái, **Szabály** fülön az ACL szabályok.
 
-> A meccs állása a böngésző memóriájában él: az oldal újratöltése vagy az *Új meccs* gomb törli. A mentett adatok a későbbi fejlesztések között szerepelnek.
+
+> A meccs automatikusan a böngésző helyi tárhelyére mentődik. Az *Új meccs* gombbal indított új mérkőzés az előző mérkőzés aktuális állását felülírja. A mentés az adott böngészőhöz és eszközhöz kötött; a böngészőadatok törlésekor elveszhet.
 
 ## Futtatás
 
@@ -63,10 +67,18 @@ Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), maj
 
 ## Fejlesztési ötletek
 
-- Meccs mentése (`localStorage`), hogy újratöltés után se vesszen el
 - Játékosnevek és hosszabb távú statisztika
-- Visszavonás gomb az utolsó körhöz
 - Angol nyelvi változat
+
+## Tesztek
+
+Node.js 22 vagy újabb verzióval futtathatók:
+
+```bash
+node --test
+```
+
+A GitHub Actions minden `main` ágra érkező push és pull request esetén automatikusan lefuttatja a teszteket.
 
 ## Licenc
 

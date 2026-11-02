@@ -110,34 +110,44 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
 .rule-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
 .rule-title{font-size:15px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .rule-body{font-size:13px;color:#444;line-height:1.7;}
-.rule-tag{background:var(--dark);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:0.4px;}
+ .rule-tag{background:var(--dark);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:0.4px;}
+.player-setup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.player-setup input{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card);font-size:13px;}
+.pwa-update{display:none;background:#fff7df;border-bottom:1px solid #f0d58b;padding:10px 16px;text-align:center;font-size:13px;}
+.pwa-update.show{display:block;}
+.pwa-update button{margin-left:8px;border:0;border-radius:7px;background:var(--dark);color:#fff;padding:7px 10px;font-weight:600;}
+.archive-list{display:grid;gap:8px;margin-top:10px;}
+.archive-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;}
+.player-stat-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
 </style>
 </head>
 <body>
 <nav>
   <h1>🌽 Cornhole</h1>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="openMatch()">Meccs</button>
-    <button class="nav-tab" onclick="showScreen('stats')">Stat</button>
-    <button class="nav-tab" onclick="showScreen('rules')">Szabály</button>
+    <button class="nav-tab active" id="nav-match" onclick="openMatch()">Meccs</button>
+    <button class="nav-tab" id="nav-stats" onclick="showScreen('stats')">Stat</button>
+    <button class="nav-tab" id="nav-rules" onclick="showScreen('rules')">Szabály</button>
+    <button class="nav-tab" id="lang-toggle" onclick="toggleLanguage()">EN</button>
   </div>
 </nav>
+<div id="pwa-update" class="pwa-update"><span id="pwa-update-text">Új verzió érhető el.</span><button onclick="applyPwaUpdate()" id="pwa-update-button">Frissítés</button></div>
 
 <div id="screen-setup" class="screen active">
-  <div class="section-label" style="margin-top:4px">Játékmód</div>
+  <div class="section-label" id="setup-mode-label" style="margin-top:4px">Játékmód</div>
   <div class="mode-cards">
     <div class="mode-card selected" id="mode-acl" onclick="selectMode('acl')">
       <div class="mode-icon">🏆</div>
       <div class="mode-title">ACL mód</div>
-      <div class="mode-desc">Kancellációs pontozás – a különbség számít</div>
+      <div class="mode-desc" id="mode-acl-desc">Kancellációs pontozás – a különbség számít</div>
     </div>
     <div class="mode-card" id="mode-simple" onclick="selectMode('simple')">
       <div class="mode-icon">🎯</div>
-      <div class="mode-title">Egyszerű</div>
-      <div class="mode-desc">Minden zsák pontot ér – összeadódnak</div>
+      <div class="mode-title" id="mode-simple-title">Egyszerű</div>
+      <div class="mode-desc" id="mode-simple-desc">Minden zsák pontot ér – összeadódnak</div>
     </div>
   </div>
-  <div class="section-label">Csapatok</div>
+  <div class="section-label" id="setup-team-label">Csapatok</div>
   <div class="team-setup">
     <div class="team-input-wrap">
       <div class="color-dot" style="background:#c0392b"></div>
@@ -148,16 +158,23 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
       <input class="team-input" id="name2" value="Csapat 2" maxlength="14"/>
     </div>
   </div>
-  <div class="section-label">Célpontszám</div>
+  <div class="section-label" id="setup-target-label">Célpontszám</div>
   <div class="target-row">
-    <span class="target-label">Győzelemhez szükséges pont</span>
+    <span class="target-label" id="target-label">Győzelemhez szükséges pont</span>
     <div class="target-controls">
       <button class="target-btn" onclick="adjTarget(-1)">−</button>
       <span class="target-val" id="target-display">21</span>
       <button class="target-btn" onclick="adjTarget(1)">+</button>
     </div>
   </div>
-  <button class="start-btn" onclick="startGame()">Meccs indítása →</button>
+  <div class="section-label" id="setup-player-label">Játékosok (opcionális)</div>
+  <div class="player-setup">
+    <input id="player1a" maxlength="24" placeholder="Piros csapat – 1. játékos"/>
+    <input id="player2a" maxlength="24" placeholder="Kék csapat – 1. játékos"/>
+    <input id="player1b" maxlength="24" placeholder="Piros csapat – 2. játékos"/>
+    <input id="player2b" maxlength="24" placeholder="Kék csapat – 2. játékos"/>
+  </div>
+  <button class="start-btn" id="start-button" onclick="startGame()">Meccs indítása →</button>
 </div>
 
 <div id="screen-game" class="screen">
@@ -187,7 +204,7 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
     <div class="input-col">
       <div class="input-col-header red" id="col-name1">Csapat 1</div>
       <div class="bag-row">
-        <div class="bag-type">Lyuk — 3 pt</div>
+        <div class="bag-type" id="bag-hole-label">Lyuk — 3 pt</div>
         <div class="bag-counter">
           <button class="bag-btn" onclick="adj(0,0,-1)">−</button>
           <span class="bag-val" id="r-t1-hole">0</span>
@@ -195,7 +212,7 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
         </div>
       </div>
       <div class="bag-row">
-        <div class="bag-type">Palán — 1 pt</div>
+        <div class="bag-type" id="bag-board-label">Palán — 1 pt</div>
         <div class="bag-counter">
           <button class="bag-btn" onclick="adj(0,1,-1)">−</button>
           <span class="bag-val" id="r-t1-board">0</span>
@@ -206,7 +223,7 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
     <div class="input-col">
       <div class="input-col-header blue" id="col-name2">Csapat 2</div>
       <div class="bag-row">
-        <div class="bag-type">Lyuk — 3 pt</div>
+        <div class="bag-type" id="bag-hole-label">Lyuk — 3 pt</div>
         <div class="bag-counter">
           <button class="bag-btn" onclick="adj(1,0,-1)">−</button>
           <span class="bag-val" id="r-t2-hole">0</span>
@@ -214,7 +231,7 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
         </div>
       </div>
       <div class="bag-row">
-        <div class="bag-type">Palán — 1 pt</div>
+        <div class="bag-type" id="bag-board-label">Palán — 1 pt</div>
         <div class="bag-counter">
           <button class="bag-btn" onclick="adj(1,1,-1)">−</button>
           <span class="bag-val" id="r-t2-board">0</span>
@@ -225,7 +242,7 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
   </div>
 
   <div class="round-net">
-    <span class="net-label">Kör nettó</span>
+    <span class="net-label" id="net-label">Kör nettó</span>
     <div class="net-values">
       <span class="net-val red" id="net1">0</span>
       <span class="net-sep">–</span>
@@ -234,15 +251,15 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
   </div>
 
   <div class="action-row">
-    <button class="action-btn primary" onclick="confirmRound()">Kör mentése ✓</button>
-    <button class="action-btn danger" onclick="resetGame()">Új meccs</button>
+    <button class="action-btn primary" id="save-round-button" onclick="confirmRound()">Kör mentése ✓</button>
+    <button class="action-btn danger" id="new-match-button" onclick="resetGame()">Új meccs</button>
   </div>
   <div class="action-row">
     <button class="action-btn" id="undo-button" onclick="undoRound()" disabled>↶ Utolsó kör visszavonása</button>
   </div>
 
   <div id="history-section" style="display:none">
-    <div class="section-label">Előző körök</div>
+    <div class="section-label" id="history-label">Előző körök</div>
     <table class="history-table">
       <thead>
         <tr>
@@ -289,6 +306,13 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
 
 <script>
 var gameMode='acl',targetScore=21,rounds=[],currentRound=[0,0,0,0],gameActive=false;
+var completedMatches=[],currentMatchArchived=false,language='hu',pendingPwaWorker=null,reloadingForPwa=false;
+var WORDS={
+hu:{match:'Meccs',stats:'Statisztika',rules:'Szabályok',mode:'Játékmód',teams:'Csapatok',players:'Játékosok (opcionális)',target:'Célpontszám',targetHint:'Győzelemhez szükséges pont',acl:'Kancellációs pontozás – a különbség számít',simple:'Egyszerű',simpleDesc:'Minden zsák pontot ér – összeadódnak',start:'Meccs indítása →',round:'kör',hole:'Lyuk',board:'Palán',net:'Kör nettó',save:'Kör mentése ✓',newMatch:'Új meccs',undo:'↶ Utolsó kör visszavonása',history:'Előző körök',targetPrefix:'cél: ',won:' nyert!',leads:' vezet',tie:'Döntetlen',points:' pont',total:'Összpontszám',avg:'Átlag pont / kör',holeRate:'Lyuk arány (%)',boardRate:'Palán arány (%)',bags:'Összes zsák',played:'Lejátszott körök: ',archive:'Korábbi mérkőzések',playerStats:'Játékos statisztikák',matches:'meccs',wins:'győzelem',empty:'Még nincs adat.<br>Játssz egy meccset!',noArchive:'Még nincs lezárt mérkőzés.',pwa:'Új verzió érhető el.',update:'Frissítés',rulesHtml:'<div class="rule-card"><div class="rule-title">🎯 Alapszabályok <span class="rule-tag">ACL</span></div><div class="rule-body">A pályák 27 láb (≈8,2 m) távolságra vannak. Minden csapat körönként 4 zsákot dob.</div></div><div class="rule-card"><div class="rule-title">💡 Pontszámítás</div><div class="rule-body"><strong>Lyuk:</strong> 3 pont<br><strong>Palán:</strong> 1 pont<br><strong>Föld:</strong> 0 pont</div></div><div class="rule-card"><div class="rule-title">❌ Kancellációs pontozás</div><div class="rule-body">A két csapat pontjait egymásból vonják le. Csak a különbség számít.</div></div><div class="rule-card"><div class="rule-title">🏆 Győzelem</div><div class="rule-body">Az a csapat nyer, amelyik eléri a célpontszámot és vezet.</div></div><div class="rule-card"><div class="rule-title">🔄 Egyszerű mód</div><div class="rule-body">Minden zsák pontja összeadódik.</div></div>'},
+en:{match:'Match',stats:'Stats',rules:'Rules',mode:'Game mode',teams:'Teams',players:'Players (optional)',target:'Target score',targetHint:'Points needed to win',acl:'Cancellation scoring – only the difference counts',simple:'Simple',simpleDesc:'Every bag scores points – totals are added',start:'Start match →',round:'Round',hole:'Hole',board:'Board',net:'Round net',save:'Save round ✓',newMatch:'New match',undo:'↶ Undo last round',history:'Previous rounds',targetPrefix:'target: ',won:' wins!',leads:' leads',tie:'Tie',points:' points',total:'Total score',avg:'Average points / round',holeRate:'Hole rate (%)',boardRate:'Board rate (%)',bags:'Total bags',played:'Rounds played: ',archive:'Match history',playerStats:'Player statistics',matches:'matches',wins:'wins',empty:'No data yet.<br>Play a match!',noArchive:'No completed matches yet.',pwa:'A new version is available.',update:'Update',rulesHtml:'<div class="rule-card"><div class="rule-title">🎯 Basic rules <span class="rule-tag">ACL</span></div><div class="rule-body">Boards are 27 feet (≈8.2 m) apart. Each team throws 4 bags per round.</div></div><div class="rule-card"><div class="rule-title">💡 Scoring</div><div class="rule-body"><strong>Hole:</strong> 3 points<br><strong>Board:</strong> 1 point<br><strong>Ground:</strong> 0 points</div></div><div class="rule-card"><div class="rule-title">❌ Cancellation scoring</div><div class="rule-body">Team scores cancel out; only the difference counts.</div></div><div class="rule-card"><div class="rule-title">🏆 Winning</div><div class="rule-body">The team that reaches the target and leads wins.</div></div><div class="rule-card"><div class="rule-title">🔄 Simple mode</div><div class="rule-body">All bag points are added.</div></div>'}
+};
+function t(k){return WORDS[language][k]||WORDS.hu[k]||k;}
+
 
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
@@ -316,15 +340,15 @@ function adjTarget(d){
 }
 
 function startGame(){
-  gameActive=true;
+  gameActive=true;currentMatchArchived=false;
   rounds=[];currentRound=[0,0,0,0];
-  var n1=document.getElementById('name1').value||'Csapat 1';
-  var n2=document.getElementById('name2').value||'Csapat 2';
+  var n1=document.getElementById('name1').value||(language==='hu'?'Csapat 1':'Team 1');
+  var n2=document.getElementById('name2').value||(language==='hu'?'Csapat 2':'Team 2');
   document.getElementById('g-name1').textContent=n1;
   document.getElementById('g-name2').textContent=n2;
   document.getElementById('col-name1').textContent=n1;
   document.getElementById('col-name2').textContent=n2;
-  document.getElementById('g-target').textContent='cél: '+targetScore;
+  document.getElementById('g-target').textContent=t('targetPrefix')+targetScore;
   renderGame();
   showScreen('game');
   saveState();
@@ -391,7 +415,7 @@ function renderGame(preserveCurrentRound){
   var tots=getScores();
   document.getElementById('g-score1').textContent=tots[0];
   document.getElementById('g-score2').textContent=tots[1];
-  document.getElementById('round-label').textContent=(rounds.length+1)+'. kör';
+  document.getElementById('round-label').textContent=language==='hu'?(rounds.length+1)+'. kör':t('round')+' '+(rounds.length+1);
   var wb=document.getElementById('winner-bar');
   var wt=document.getElementById('winner-title');
   var ws=document.getElementById('winner-sub');
@@ -399,14 +423,14 @@ function renderGame(preserveCurrentRound){
   var n1=document.getElementById('g-name1').textContent;
   var n2=document.getElementById('g-name2').textContent;
   var winner=getWinner(tots,targetScore);
-  if(winner===0){wb.classList.add('show','win-red');wt.textContent='🏆 '+n1+' nyert!';ws.textContent=tots[0]+' – '+tots[1]+' pont';}
-  else if(winner===1){wb.classList.add('show','win-blue');wt.textContent='🏆 '+n2+' nyert!';ws.textContent=tots[0]+' – '+tots[1]+' pont';}
+  if(winner===0){wb.classList.add('show','win-red');wt.textContent='🏆 '+n1+t('won');ws.textContent=tots[0]+' – '+tots[1]+t('points');}
+  else if(winner===1){wb.classList.add('show','win-blue');wt.textContent='🏆 '+n2+t('won');ws.textContent=tots[0]+' – '+tots[1]+t('points');}
   else if(tots[0]>0||tots[1]>0){
     wb.classList.add('show');
-    if(tots[0]>tots[1]){wb.classList.add('win-red');wt.textContent=n1+' vezet';}
-    else if(tots[1]>tots[0]){wb.classList.add('win-blue');wt.textContent=n2+' vezet';}
-    else{wb.classList.add('tie');wt.textContent='Döntetlen';}
-    ws.textContent=tots[0]+' – '+tots[1]+' pont';
+    if(tots[0]>tots[1]){wb.classList.add('win-red');wt.textContent=n1+t('leads');}
+    else if(tots[1]>tots[0]){wb.classList.add('win-blue');wt.textContent=n2+t('leads');}
+    else{wb.classList.add('tie');wt.textContent=t('tie');}
+    ws.textContent=tots[0]+' – '+tots[1]+t('points');
   }
   var tbody=document.getElementById('history-body');
   tbody.innerHTML='';
@@ -434,6 +458,7 @@ function confirmRound(){
   if(team1Bags+team2Bags===0)return;
   rounds.push(currentRound.slice());
   renderGame();
+  if(isGameFinished())archiveCurrentMatch();
   saveState();
 }
 
@@ -471,7 +496,10 @@ function saveState(){
       name1:document.getElementById('name1').value,
       name2:document.getElementById('name2').value,
       team1:document.getElementById('g-name1').textContent,
-      team2:document.getElementById('g-name2').textContent
+      team2:document.getElementById('g-name2').textContent,
+      player1a:document.getElementById('player1a').value,player1b:document.getElementById('player1b').value,
+      player2a:document.getElementById('player2a').value,player2b:document.getElementById('player2b').value,
+      completedMatches:completedMatches,currentMatchArchived:currentMatchArchived,language:language
     }));
   }catch(error){
     console.warn('A meccs mentése nem sikerült:',error);
@@ -498,10 +526,13 @@ function loadState(){
     rounds=state.rounds;
     currentRound=state.currentRound;
     gameActive=state.gameActive;
-    var name1=typeof state.name1==='string'?state.name1.slice(0,14):'Csapat 1';
-    var name2=typeof state.name2==='string'?state.name2.slice(0,14):'Csapat 2';
+    completedMatches=Array.isArray(state.completedMatches)?state.completedMatches.filter(isValidArchivedMatch).slice(-100):[];
+    currentMatchArchived=state.currentMatchArchived===true;language=state.language==='en'?'en':'hu';
+    var name1=typeof state.name1==='string'?state.name1.slice(0,14):(language==='hu'?'Csapat 1':'Team 1');
+    var name2=typeof state.name2==='string'?state.name2.slice(0,14):(language==='hu'?'Csapat 2':'Team 2');
     document.getElementById('name1').value=name1;
     document.getElementById('name2').value=name2;
+    ['player1a','player1b','player2a','player2b'].forEach(function(id){var p=state[id];document.getElementById(id).value=typeof p==='string'?p.slice(0,24):'';});
     document.getElementById('target-display').textContent=targetScore;
     document.getElementById('mode-acl').classList.toggle('selected',gameMode==='acl');
     document.getElementById('mode-simple').classList.toggle('selected',gameMode==='simple');
@@ -511,7 +542,7 @@ function loadState(){
     document.getElementById('g-name2').textContent=team2;
     document.getElementById('col-name1').textContent=team1;
     document.getElementById('col-name2').textContent=team2;
-    document.getElementById('g-target').textContent='cél: '+targetScore;
+    document.getElementById('g-target').textContent=t('targetPrefix')+targetScore;
     if(gameActive){
       renderGame(true);
       renderCurrentRound();
@@ -524,11 +555,20 @@ function loadState(){
   }
 }
 
+
+function isValidArchivedMatch(m){return !!m&&typeof m.date==='string'&&typeof m.team1==='string'&&typeof m.team2==='string'&&Array.isArray(m.players1)&&Array.isArray(m.players2)&&Number.isInteger(m.score1)&&Number.isInteger(m.score2)&&(m.winner===0||m.winner===1)&&['acl','simple'].includes(m.mode);}
+function archiveCurrentMatch(){if(currentMatchArchived||!isGameFinished())return;var scores=getScores(),winner=getWinner(scores,targetScore);if(winner===null)return;completedMatches.push({date:new Date().toISOString(),mode:gameMode,team1:document.getElementById('g-name1').textContent,team2:document.getElementById('g-name2').textContent,players1:[document.getElementById('player1a').value,document.getElementById('player1b').value].filter(Boolean),players2:[document.getElementById('player2a').value,document.getElementById('player2b').value].filter(Boolean),score1:scores[0],score2:scores[1],winner:winner,rounds:rounds.length});completedMatches=completedMatches.slice(-100);currentMatchArchived=true;}
+function renderLongTermStats(){var html='<div class="section-label">'+t('archive')+'</div>';if(!completedMatches.length)return html+'<div class="empty-state">'+t('noArchive')+'</div>';var players={};completedMatches.forEach(function(m){[[m.players1,m.score1,m.winner===0],[m.players2,m.score2,m.winner===1]].forEach(function(team){team[0].forEach(function(name){if(!name)return;if(!players[name])players[name]={played:0,wins:0,points:0};players[name].played++;players[name].points+=team[1];if(team[2])players[name].wins++;});});});html+='<div class="stats-grid"><div class="stat-card"><div class="stat-val">'+completedMatches.length+'</div><div class="stat-lbl">'+t('matches')+'</div></div><div class="stat-card"><div class="stat-val">'+Object.keys(players).length+'</div><div class="stat-lbl">'+t('playerStats')+'</div></div></div><div class="section-label">'+t('playerStats')+'</div><div class="rule-card">';Object.keys(players).sort().forEach(function(name){var p=players[name];html+='<div class="player-stat-row"><strong>'+escapeHtml(name)+'</strong><span>'+p.played+' '+t('matches')+' · '+p.wins+' '+t('wins')+' · '+p.points+t('points')+'</span></div>';});html+='</div><div class="section-label">'+t('archive')+'</div><div class="archive-list">';completedMatches.slice().reverse().forEach(function(m){var date=new Date(m.date).toLocaleDateString(language==='hu'?'hu-HU':'en-GB');html+='<div class="archive-item"><strong>'+escapeHtml(m.team1)+' '+m.score1+' – '+m.score2+' '+escapeHtml(m.team2)+'</strong><div>'+date+' · '+(m.mode==='acl'?'ACL':'Simple')+' · '+m.rounds+' '+t('round')+'</div></div>';});return html+'</div>';}
+function applyLanguage(){document.documentElement.lang=language;document.getElementById('lang-toggle').textContent=language==='hu'?'EN':'HU';['nav-match','nav-stats','nav-rules'].forEach(function(id,i){document.getElementById(id).textContent=t(['match','stats','rules'][i]);});['setup-mode-label','setup-team-label','setup-player-label','setup-target-label'].forEach(function(id,i){document.getElementById(id).textContent=t(['mode','teams','players','target'][i]);});document.getElementById('mode-acl-desc').textContent=t('acl');document.getElementById('mode-simple-title').textContent=t('simple');document.getElementById('mode-simple-desc').textContent=t('simpleDesc');document.getElementById('target-label').textContent=t('targetHint');document.getElementById('start-button').textContent=t('start');document.getElementById('bag-hole-label').textContent=t('hole')+' — 3 pt';document.getElementById('bag-board-label').textContent=t('board')+' — 1 pt';document.getElementById('net-label').textContent=t('net');document.getElementById('save-round-button').textContent=t('save');document.getElementById('new-match-button').textContent=t('newMatch');document.getElementById('undo-button').textContent=t('undo');document.getElementById('history-label').textContent=t('history');document.getElementById('pwa-update-text').textContent=t('pwa');document.getElementById('pwa-update-button').textContent=t('update');document.getElementById('player1a').placeholder=language==='hu'?'Piros csapat – 1. játékos':'Red team – Player 1';document.getElementById('player1b').placeholder=language==='hu'?'Piros csapat – 2. játékos':'Red team – Player 2';document.getElementById('player2a').placeholder=language==='hu'?'Kék csapat – 1. játékos':'Blue team – Player 1';document.getElementById('player2b').placeholder=language==='hu'?'Kék csapat – 2. játékos':'Blue team – Player 2';document.getElementById('screen-rules').innerHTML=WORDS[language].rulesHtml;document.getElementById('g-target').textContent=t('targetPrefix')+targetScore;if(gameActive)renderGame(true);if(document.getElementById('screen-stats').classList.contains('active'))renderStats();saveState();}
+function toggleLanguage(){language=language==='hu'?'en':'hu';applyLanguage();}
+function registerPwa(){navigator.serviceWorker.register('sw.js').then(function(reg){function waiting(){if(reg.waiting&&navigator.serviceWorker.controller){pendingPwaWorker=reg.waiting;document.getElementById('pwa-update').classList.add('show');}}waiting();reg.addEventListener('updatefound',function(){var worker=reg.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller){pendingPwaWorker=worker;document.getElementById('pwa-update').classList.add('show');}});});}).catch(function(error){console.warn('PWA registration failed:',error);});navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloadingForPwa)return;reloadingForPwa=true;window.location.reload();});}
+function applyPwaUpdate(){if(pendingPwaWorker)pendingPwaWorker.postMessage({type:'SKIP_WAITING'});}
+
 function renderStats(){
   var el=document.getElementById('stats-content');
-  if(rounds.length===0){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Még nincs adat.<br>Játssz egy meccset!</div></div>';return;}
-  var n1=escapeHtml(document.getElementById('g-name1').textContent||'Csapat 1');
-  var n2=escapeHtml(document.getElementById('g-name2').textContent||'Csapat 2');
+  if(rounds.length===0){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">'+t('empty')+'</div></div>'+renderLongTermStats();return;}
+  var n1=escapeHtml(document.getElementById('g-name1').textContent||(language==='hu'?'Csapat 1':'Team 1'));
+  var n2=escapeHtml(document.getElementById('g-name2').textContent||(language==='hu'?'Csapat 2':'Team 2'));
   var t1hole=0,t1board=0,t2hole=0,t2board=0;
   for(var i=0;i<rounds.length;i++){t1hole+=rounds[i][0];t1board+=rounds[i][1];t2hole+=rounds[i][2];t2board+=rounds[i][3];}
   var t1bags=t1hole+t1board,t2bags=t2hole+t2board;
@@ -540,23 +580,23 @@ function renderStats(){
   var t1avg=rounds.length>0?(tots[0]/rounds.length).toFixed(1):0;
   var t2avg=rounds.length>0?(tots[1]/rounds.length).toFixed(1):0;
   el.innerHTML=
-    '<div class="section-label" style="margin-top:4px">Összpontszám</div>'+
+    '<div class="section-label" style="margin-top:4px">'+t('total')+'</div>'+
     '<div class="stats-grid">'+
       '<div class="stat-card"><div class="stat-val red">'+tots[0]+'</div><div class="stat-lbl">'+n1+'</div></div>'+
       '<div class="stat-card"><div class="stat-val blue">'+tots[1]+'</div><div class="stat-lbl">'+n2+'</div></div>'+
     '</div>'+
-    '<div class="section-label">Átlag pont / kör</div>'+
+    '<div class="section-label">'+t('avg')+'</div>'+
     '<div class="stats-grid">'+
       '<div class="stat-card"><div class="stat-val red">'+t1avg+'</div><div class="stat-lbl">'+n1+'</div></div>'+
       '<div class="stat-card"><div class="stat-val blue">'+t2avg+'</div><div class="stat-lbl">'+n2+'</div></div>'+
     '</div>'+
-    '<div class="section-label">Lyuk arány (%)</div>'+
+    '<div class="section-label">'+t('holeRate')+'</div>'+
     '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' – '+t1hPct+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1hPct+'%;background:var(--red)"></div></div></div>'+
     '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--blue);font-weight:600">'+n2+' – '+t2hPct+'%</span></div><div class="bar-track"><div class="bar-fill blue" style="width:'+t2hPct+'%"></div></div></div>'+
-    '<div class="section-label">Palán arány (%)</div>'+
+    '<div class="section-label">'+t('boardRate')+'</div>'+
     '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' – '+t1bPct+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1bPct+'%;background:var(--red)"></div></div></div>'+
     '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--blue);font-weight:600">'+n2+' – '+t2bPct+'%</span></div><div class="bar-track"><div class="bar-fill blue" style="width:'+t2bPct+'%"></div></div></div>'+
-    '<div class="section-label">Összes zsák</div>'+
+    '<div class="section-label">'+t('bags')+'</div>'+
     '<div class="stats-grid">'+
       '<div class="stat-card"><div class="stat-val red">'+t1bags+'</div><div class="stat-lbl">'+n1+'</div>'+
         '<div class="stat-subrow"><div class="stat-sub"><div class="stat-sub-val" style="color:var(--red)">'+t1hole+'</div><div class="stat-sub-lbl">Lyuk</div></div><div class="stat-sub"><div class="stat-sub-val" style="color:var(--red)">'+t1board+'</div><div class="stat-sub-lbl">Palán</div></div></div>'+
@@ -565,12 +605,13 @@ function renderStats(){
         '<div class="stat-subrow"><div class="stat-sub"><div class="stat-sub-val" style="color:var(--blue)">'+t2hole+'</div><div class="stat-sub-lbl">Lyuk</div></div><div class="stat-sub"><div class="stat-sub-val" style="color:var(--blue)">'+t2board+'</div><div class="stat-sub-lbl">Palán</div></div></div>'+
       '</div>'+
     '</div>'+
-    '<div class="section-label">Lejátszott körök: '+rounds.length+'</div>';
+    '<div class="section-label">'+t('played')+rounds.length+'</div>'+renderLongTermStats();
 }
 document.getElementById('name1').addEventListener('input',saveState);
 document.getElementById('name2').addEventListener('input',saveState);
-loadState();
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+['player1a','player1b','player2a','player2b'].forEach(function(id){document.getElementById(id).addEventListener('input',saveState);});
+loadState();applyLanguage();
+if('serviceWorker' in navigator){window.addEventListener('load',registerPwa);}
 </script>
 </body>
 </html>

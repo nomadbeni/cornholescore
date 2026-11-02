@@ -330,6 +330,10 @@ function canAddBag(round,team){
   return getTeamBagCount(round,team)<4;
 }
 
+function isRoundValid(round){
+  return getTeamBagCount(round,0)<=4&&getTeamBagCount(round,1)<=4;
+}
+
 function getWinner(scores,target){
   if(scores[0]>=target&&scores[0]>scores[1])return 0;
   if(scores[1]>=target&&scores[1]>scores[0])return 1;
@@ -345,7 +349,6 @@ function adj(team,type,delta){
   if((team!==0&&team!==1)||(type!==0&&type!==1))return;
   var index=team*2+type;
   var next=Math.max(0,currentRound[index]+delta);
-  var teamTotal=currentRound[team*2]+currentRound[team*2+1];
   if(delta>0&&!canAddBag(currentRound,team))return;
   currentRound[index]=next;
   renderCurrentRound();
@@ -416,8 +419,7 @@ function confirmRound(){
   if(!gameActive||isGameFinished())return;
   var team1Bags=currentRound[0]+currentRound[1];
   var team2Bags=currentRound[2]+currentRound[3];
-  if(!canAddBag(currentRound,0)&&team1Bags>4)return;
-  if(!canAddBag(currentRound,1)&&team2Bags>4)return;
+  if(!isRoundValid(currentRound))return;
   if(team1Bags+team2Bags===0)return;
   rounds.push(currentRound.slice());
   renderGame();

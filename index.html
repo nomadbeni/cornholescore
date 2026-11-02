@@ -499,14 +499,14 @@ function loadState(){
     document.getElementById('target-display').textContent=targetScore;
     document.getElementById('mode-acl').classList.toggle('selected',gameMode==='acl');
     document.getElementById('mode-simple').classList.toggle('selected',gameMode==='simple');
+    var team1=typeof state.team1==='string'?state.team1.slice(0,14):name1;
+    var team2=typeof state.team2==='string'?state.team2.slice(0,14):name2;
+    document.getElementById('g-name1').textContent=team1;
+    document.getElementById('g-name2').textContent=team2;
+    document.getElementById('col-name1').textContent=team1;
+    document.getElementById('col-name2').textContent=team2;
+    document.getElementById('g-target').textContent='cél: '+targetScore;
     if(gameActive){
-      var team1=typeof state.team1==='string'?state.team1.slice(0,14):name1;
-      var team2=typeof state.team2==='string'?state.team2.slice(0,14):name2;
-      document.getElementById('g-name1').textContent=team1;
-      document.getElementById('g-name2').textContent=team2;
-      document.getElementById('col-name1').textContent=team1;
-      document.getElementById('col-name2').textContent=team2;
-      document.getElementById('g-target').textContent='cél: '+targetScore;
       renderGame(true);
       renderCurrentRound();
       showScreen('game');

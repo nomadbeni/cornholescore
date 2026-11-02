@@ -86,5 +86,8 @@ A GitHub Actions minden `main` ágra érkező push és pull request esetén auto
 
 ## Mesterséges intelligencia
 
-> **Ezt az appot mesterséges intelligencia készítette.** A teljes kódot, az ikonokat és ezt a dokumentációt az Anthropic **Claude** nevű MI-asszisztense írta (Claude Code, Claude Sonnet 5.5), `nomadbeni` kérésére és irányításával. A pontozási, körvalidációs, visszavonási és csapatnév-escape logikához Node.js automatizált tesztek tartoznak. Teljes körű mobilböngészős tesztelés nem történt; hibák előfordulhatnak.
+> **A projekt fejlesztésében mesterséges intelligencia is közreműködött.** Az alkalmazás első változatát, az ikonokat és az eredeti dokumentációt az Anthropic **Claude** nevű MI-asszisztense készítette (Claude Code, Claude Sonnet 5.5), `nomadbeni` kérésére és irányításával. A pontozási, körvalidációs, visszavonási és csapatnév-escape logikához Node.js automatizált tesztek tartoznak. Teljes körű mobilböngészős tesztelés nem történt; hibák előfordulhatnak.
 
+## További fejlesztői közreműködés
+
+A projekt kódjának felülvizsgálatában és továbbfejlesztésében az **OpenAI ChatGPT** is közreműködött. A ChatGPT segítségével készültek el többek között a P0 és P1 fejlesztések: a zsákszám-korlátozás, a mérkőzés lezárásának javításai, a kör visszavonása, a böngészőalapú automatikus mentés, a biztonságosabb megjelenítés, valamint az ezekhez tartozó automatizált tesztek és GitHub Actions munkafolyamat. A fejlesztési irányokat és a végleges módosításokat a projekt gazdája határozta meg és hagyta jóvá.

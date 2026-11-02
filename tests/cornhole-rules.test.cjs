@@ -9,10 +9,10 @@ assert.ok(match, 'inline application script exists');
 
 const context = { navigator: {} };
 vm.runInNewContext(
-  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner };',
+  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml };',
   context
 );
-const { getTeamBagCount, canAddBag, isRoundValid, getWinner } = context.rules;
+const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml } = context.rules;
 
 test('a team can record up to four bags in one round', () => {
   const round = [0, 0, 0, 0];
@@ -47,4 +47,18 @@ test('a tied score at or above the target does not declare a winner', () => {
   assert.equal(getWinner([21, 21], 21), null);
   assert.equal(getWinner([25, 25], 21), null);
   assert.equal(getWinner([20, 20], 21), null);
+});
+
+test('saved round validation rejects malformed and over-limit data', () => {
+  assert.equal(isValidRound([4, 0, 2, 2]), true);
+  assert.equal(isValidRound([4, 1, 0, 0]), false);
+  assert.equal(isValidRound([0, 0, 0, -1]), false);
+  assert.equal(isValidRound([0, 0, 0, 1.5]), false);
+  assert.equal(isValidRound([0, 0, 0]), false);
+  assert.equal(isValidRound('not a round'), false);
+});
+
+test('team names are escaped before HTML rendering', () => {
+  assert.equal(escapeHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+  assert.equal(escapeHtml("A&B \"team\""), 'A&amp;B &quot;team&quot;');
 });

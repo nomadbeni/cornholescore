@@ -14,7 +14,11 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 - **Visszavonás** – az utolsó mentett kör visszaállítható.
 - **Automatikus mentés** – a meccs állása, csapatnevek és beállítások a böngésző `localStorage` tárhelyére kerülnek; újratöltés után a folyamatban lévő meccs folytatható.
 - **Biztonságos csapatnevek** – a statisztikai nézet HTML-kódként nem értelmezi a megadott neveket.
-- **Statisztikák** – összpontszám, átlag pont/kör, lyuk és palán arány (%), összes dobott zsák.
+- **Statisztikák** – összpontszám, átlag pont/kör, lyuk- és palánarány, dobott zsákok.
+- **Játékosok** – csapatonként legfeljebb két játékos neve adható meg; a lezárt mérkőzések játékosstatisztikái összesítve láthatók.
+- **Mérkőzésarchívum** – a befejezett meccsek eredménye, dátuma és játékmódja automatikusan mentődik; legfeljebb 100 mérkőzés marad meg.
+- **Magyar / angol felület** – a nyelv a felső sávban váltható, a választás megmarad.
+- **PWA-frissítésjelzés** – új verzió esetén külön Frissítés gomb jelenik meg, így a futó meccs közben nem történik automatikus újratöltés.
 - **Szabályok** – gyors ACL referencia a meccs közben.
 - **Offline** – egyetlen fájl, internet nélkül is fut.
 
@@ -23,10 +27,13 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 1. **Meccs** fül: válassz módot, add meg a csapatneveket és a célpontszámot, majd *Meccs indítása*.
 2. Minden kör végén írd be a lyukba és a palánra került zsákok számát csapatonként, majd *Kör mentése ✓*.
 3. A felső sáv mutatja az állást; a cél elérésekor megjelenik a győztes.
-4. **Stat** fülön a meccs statisztikái, **Szabály** fülön az ACL szabályok.
+4. **Stat** fülön az aktuális meccs adatai, a korábbi mérkőzések és a játékosok összesített eredményei láthatók.
+5. A csapatnevek alatt opcionálisan megadható két-két játékos. A játékosstatisztika a lezárt mérkőzésekből készül.
+6. A felső sáv **EN / HU** gombjával válthatsz nyelvet.
+7. Új PWA-verzió esetén a frissítést a megjelenő gombbal lehet jóváhagyni.
 
 
-> A meccs automatikusan a böngésző helyi tárhelyére mentődik. Az *Új meccs* gombbal indított új mérkőzés az előző mérkőzés aktuális állását felülírja. A mentés az adott böngészőhöz és eszközhöz kötött; a böngészőadatok törlésekor elveszhet.
+> A meccs és a lezárt mérkőzések archívuma automatikusan a böngésző helyi `localStorage` tárhelyére mentődik. Az archívum legfeljebb 100 lezárt mérkőzést tart meg. Az *Új meccs* gombbal indított új mérkőzés az aktuális, folyamatban lévő állást felülírja, a korábbi lezárt meccsek archívuma megmarad. A mentés az adott böngészőhöz és eszközhöz kötött; a böngészőadatok törlésekor elveszhet. Nincs felhőszinkronizáció.
 
 ## Futtatás
 
@@ -67,8 +74,7 @@ Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), maj
 
 ## Fejlesztési ötletek
 
-- Játékosnevek és hosszabb távú statisztika
-- Angol nyelvi változat
+- Több eszköz közötti mentésszinkronizáció (opcionális, későbbi fejlesztés)
 
 ## Tesztek
 
@@ -80,6 +86,15 @@ node --test
 
 A GitHub Actions minden `main` ágra érkező push és pull request esetén automatikusan lefuttatja a teszteket.
 
+## P2 fejlesztések – játékosok, archívum és nyelvváltás
+
+- A játékosnevek opcionálisak, csapatonként két mező áll rendelkezésre.
+- A mérkőzés akkor kerül az archívumba, amikor valamelyik csapat eléri a győzelmi feltételt.
+- A játékosstatisztika a megadott játékosnevek alapján számolja a lejátszott mérkőzéseket, győzelmeket és a csapat pontjait. Páros játék esetén a csapat eredményét mindkét játékoshoz hozzárendeli.
+- A mérkőzésarchívum legfeljebb 100 lezárt mérkőzést őriz.
+- A nyelvváltás a navigációt, a pontozó felületet, a statisztikákat és a szabályokat is érinti.
+- A PWA új verziója értesítést ad; az aktiválás felhasználói jóváhagyással történik.
+
 ## Licenc
 
 [MIT](LICENSE)
@@ -90,4 +105,4 @@ A GitHub Actions minden `main` ágra érkező push és pull request esetén auto
 
 ## További fejlesztői közreműködés
 
-A projekt kódjának felülvizsgálatában és továbbfejlesztésében az **OpenAI ChatGPT** is közreműködött. A ChatGPT segítségével készültek el többek között a P0 és P1 fejlesztések: a zsákszám-korlátozás, a mérkőzés lezárásának javításai, a kör visszavonása, a böngészőalapú automatikus mentés, a biztonságosabb megjelenítés, valamint az ezekhez tartozó automatizált tesztek és GitHub Actions munkafolyamat. A fejlesztési irányokat és a végleges módosításokat a projekt gazdája határozta meg és hagyta jóvá.
+A projekt kódjának felülvizsgálatában és továbbfejlesztésében az **OpenAI ChatGPT** is közreműködött. A ChatGPT segítségével készültek el többek között a P0 és P1 fejlesztések: a zsákszám-korlátozás, a mérkőzés lezárásának javításai, a kör visszavonása, a böngészőalapú automatikus mentés, a biztonságosabb megjelenítés, továbbá a P2 csomag játékoskezelése, mérkőzésarchívuma, magyar–angol kezelőfelülete és PWA-frissítésjelzése, valamint az ezekhez tartozó automatizált tesztek és GitHub Actions munkafolyamat. A fejlesztési irányokat és a végleges módosításokat a projekt gazdája határozta meg és hagyta jóvá.

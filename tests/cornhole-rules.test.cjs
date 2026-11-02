@@ -4,12 +4,12 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const html = fs.readFileSync('index.html', 'utf8');
-const match = html.match(/<script>([\\s\\S]*?)<\\/script>/);
+const match = html.match(/<script>([\s\S]*?)<\/script>/);
 assert.ok(match, 'inline application script exists');
 
 const context = { navigator: {} };
 vm.runInNewContext(
-  match[1] + '\\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner };',
+  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner };',
   context
 );
 const { getTeamBagCount, canAddBag, isRoundValid, getWinner } = context.rules;

@@ -48,7 +48,8 @@ Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), maj
 | Fájl | Tartalom |
 |---|---|
 | `index.html` | A teljes app (HTML, CSS, JavaScript egyben) |
-| `manifest.json`, `sw.js`, `icon*.svg/png` | Opcionális: csak akkor kellenek, ha az appot egyszer HTTPS-en akarod kiszolgálni (telepíthető PWA). Az app nélkülük is működik. |
+| `manifest.json`, `sw.js`, `icon*.svg/png` | Opcionális: HTTPS-en (pl. GitHub Pages) ettől lesz telepíthető PWA. Az app nélkülük is működik. |
+| `LICENSE` | MIT licenc |
 
 ## Pontozás röviden
 
@@ -69,4 +70,4 @@ Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), maj
 
 ## Licenc
 
-Személyes projekt, jelenleg nincs megadott licenc.
+[MIT](LICENSE)

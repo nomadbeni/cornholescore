@@ -101,7 +101,8 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
 .bar-row{margin-bottom:12px;}
 .bar-label-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
 .bar-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;}
+ .bar-fill{height:100%;border-radius:4px;}
+.bar-fill.blue{background:var(--blue);}
 .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
 .empty-icon{font-size:40px;margin-bottom:12px;}
 .empty-text{font-size:15px;line-height:1.6;}
@@ -235,6 +236,9 @@ nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
     <button class="action-btn primary" onclick="confirmRound()">Kör mentése ✓</button>
     <button class="action-btn danger" onclick="resetGame()">Új meccs</button>
   </div>
+  <div class="action-row">
+    <button class="action-btn" id="undo-button" onclick="undoRound()" disabled>↶ Utolsó kör visszavonása</button>
+  </div>
 
   <div id="history-section" style="display:none">
     <div class="section-label">Előző körök</div>
@@ -301,11 +305,13 @@ function selectMode(m){
   gameMode=m;
   document.getElementById('mode-acl').classList.toggle('selected',m==='acl');
   document.getElementById('mode-simple').classList.toggle('selected',m==='simple');
+  saveState();
 }
 
 function adjTarget(d){
   targetScore=Math.max(11,Math.min(50,targetScore+d));
   document.getElementById('target-display').textContent=targetScore;
+  saveState();
 }
 
 function startGame(){
@@ -320,6 +326,7 @@ function startGame(){
   document.getElementById('g-target').textContent='cél: '+targetScore;
   renderGame();
   showScreen('game');
+  saveState();
 }
 
 function getTeamBagCount(round,team){
@@ -352,6 +359,7 @@ function adj(team,type,delta){
   if(delta>0&&!canAddBag(currentRound,team))return;
   currentRound[index]=next;
   renderCurrentRound();
+  saveState();
 }
 
 function getScores(){
@@ -376,8 +384,8 @@ function renderCurrentRound(){
   document.getElementById('net2').textContent=n2;
 }
 
-function renderGame(){
-  currentRound=[0,0,0,0];
+function renderGame(preserveCurrentRound){
+  if(!preserveCurrentRound)currentRound=[0,0,0,0];
   renderCurrentRound();
   var tots=getScores();
   document.getElementById('g-score1').textContent=tots[0];
@@ -413,6 +421,8 @@ function renderGame(){
   document.querySelectorAll('.bag-btn').forEach(function(button){button.disabled=finished;});
   var saveButton=document.querySelector('.action-btn.primary');
   if(saveButton)saveButton.disabled=finished;
+  var undoButton=document.getElementById('undo-button');
+  if(undoButton)undoButton.disabled=rounds.length===0;
 }
 
 function confirmRound(){
@@ -423,19 +433,96 @@ function confirmRound(){
   if(team1Bags+team2Bags===0)return;
   rounds.push(currentRound.slice());
   renderGame();
+  saveState();
+}
+
+function undoRound(){
+  if(!gameActive||rounds.length===0)return;
+  rounds.pop();
+  currentRound=[0,0,0,0];
+  renderGame();
+  saveState();
 }
 
 function resetGame(){
   if(rounds.length>0&&!confirm('Biztosan új meccset kezdesz?'))return;
   gameActive=false;
   showScreen('setup');
+  saveState();
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,function(char){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];
+  });
+}
+
+function saveState(){
+  try{
+    localStorage.setItem('cornhole-score-state-v1',JSON.stringify({
+      gameMode:gameMode,targetScore:targetScore,rounds:rounds,
+      currentRound:currentRound,gameActive:gameActive,
+      name1:document.getElementById('name1').value,
+      name2:document.getElementById('name2').value,
+      team1:document.getElementById('g-name1').textContent,
+      team2:document.getElementById('g-name2').textContent
+    }));
+  }catch(error){
+    console.warn('A meccs mentése nem sikerült:',error);
+  }
+}
+
+function isValidRound(round){
+  return Array.isArray(round)&&round.length===4&&
+    round.every(function(value){return Number.isInteger(value)&&value>=0&&value<=4;})&&
+    isRoundValid(round);
+}
+
+function loadState(){
+  try{
+    var raw=localStorage.getItem('cornhole-score-state-v1');
+    if(!raw)return false;
+    var state=JSON.parse(raw);
+    if(!state||!['acl','simple'].includes(state.gameMode)||
+       !Number.isInteger(state.targetScore)||state.targetScore<11||state.targetScore>50||
+       !Array.isArray(state.rounds)||!state.rounds.every(isValidRound)||
+       !isValidRound(state.currentRound)||typeof state.gameActive!=='boolean')return false;
+    gameMode=state.gameMode;
+    targetScore=state.targetScore;
+    rounds=state.rounds;
+    currentRound=state.currentRound;
+    gameActive=state.gameActive;
+    var name1=typeof state.name1==='string'?state.name1.slice(0,14):'Csapat 1';
+    var name2=typeof state.name2==='string'?state.name2.slice(0,14):'Csapat 2';
+    document.getElementById('name1').value=name1;
+    document.getElementById('name2').value=name2;
+    document.getElementById('target-display').textContent=targetScore;
+    document.getElementById('mode-acl').classList.toggle('selected',gameMode==='acl');
+    document.getElementById('mode-simple').classList.toggle('selected',gameMode==='simple');
+    if(gameActive){
+      var team1=typeof state.team1==='string'?state.team1.slice(0,14):name1;
+      var team2=typeof state.team2==='string'?state.team2.slice(0,14):name2;
+      document.getElementById('g-name1').textContent=team1;
+      document.getElementById('g-name2').textContent=team2;
+      document.getElementById('col-name1').textContent=team1;
+      document.getElementById('col-name2').textContent=team2;
+      document.getElementById('g-target').textContent='cél: '+targetScore;
+      renderGame(true);
+      renderCurrentRound();
+      showScreen('game');
+    }
+    return true;
+  }catch(error){
+    console.warn('A mentett meccs betöltése nem sikerült:',error);
+    return false;
+  }
 }
 
 function renderStats(){
   var el=document.getElementById('stats-content');
   if(rounds.length===0){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">Még nincs adat.<br>Játssz egy meccset!</div></div>';return;}
-  var n1=document.getElementById('g-name1').textContent||'Csapat 1';
-  var n2=document.getElementById('g-name2').textContent||'Csapat 2';
+  var n1=escapeHtml(document.getElementById('g-name1').textContent||'Csapat 1');
+  var n2=escapeHtml(document.getElementById('g-name2').textContent||'Csapat 2');
   var t1hole=0,t1board=0,t2hole=0,t2board=0;
   for(var i=0;i<rounds.length;i++){t1hole+=rounds[i][0];t1board+=rounds[i][1];t2hole+=rounds[i][2];t2board+=rounds[i][3];}
   var t1bags=t1hole+t1board,t2bags=t2hole+t2board;
@@ -458,9 +545,11 @@ function renderStats(){
       '<div class="stat-card"><div class="stat-val blue">'+t2avg+'</div><div class="stat-lbl">'+n2+'</div></div>'+
     '</div>'+
     '<div class="section-label">Lyuk arány (%)</div>'+
-    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' '+t1hPct+'%</span><span style="color:var(--blue);font-weight:600">'+t2hPct+'% '+n2+'</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1hPct+'%;background:var(--red)"></div></div></div>'+
+    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' – '+t1hPct+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1hPct+'%;background:var(--red)"></div></div></div>'+
+    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--blue);font-weight:600">'+n2+' – '+t2hPct+'%</span></div><div class="bar-track"><div class="bar-fill blue" style="width:'+t2hPct+'%"></div></div></div>'+
     '<div class="section-label">Palán arány (%)</div>'+
-    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' '+t1bPct+'%</span><span style="color:var(--blue);font-weight:600">'+t2bPct+'% '+n2+'</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1bPct+'%;background:var(--red)"></div></div></div>'+
+    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--red);font-weight:600">'+n1+' – '+t1bPct+'%</span></div><div class="bar-track"><div class="bar-fill" style="width:'+t1bPct+'%;background:var(--red)"></div></div></div>'+
+    '<div class="bar-row"><div class="bar-label-row"><span style="color:var(--blue);font-weight:600">'+n2+' – '+t2bPct+'%</span></div><div class="bar-track"><div class="bar-fill blue" style="width:'+t2bPct+'%"></div></div></div>'+
     '<div class="section-label">Összes zsák</div>'+
     '<div class="stats-grid">'+
       '<div class="stat-card"><div class="stat-val red">'+t1bags+'</div><div class="stat-lbl">'+n1+'</div>'+
@@ -472,6 +561,9 @@ function renderStats(){
     '</div>'+
     '<div class="section-label">Lejátszott körök: '+rounds.length+'</div>';
 }
+document.getElementById('name1').addEventListener('input',saveState);
+document.getElementById('name2').addEventListener('input',saveState);
+loadState();
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
 </script>
 </body>

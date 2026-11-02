@@ -14,6 +14,7 @@
 :root{--red:#c0392b;--red-light:#e74c3c;--red-bg:#fdf2f2;--blue:#1a6fad;--blue-light:#2980b9;--blue-bg:#f0f7fd;--dark:#1a1a2e;--gold:#f39c12;--gold-bg:#fef9e7;--bg:#f4f5f7;--card:#ffffff;--border:#e2e5ea;--text:#1a1a2e;--muted:#7f8c8d;--radius:14px;--radius-sm:8px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 button{touch-action:manipulation;}
+button:disabled{opacity:.45;cursor:not-allowed;}
 html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);}
 nav{background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px;position:sticky;top:0;z-index:100;}
 nav h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
@@ -436,9 +437,14 @@ function confirmRound(){
   saveState();
 }
 
+function undoLastRound(roundList){
+  if(!Array.isArray(roundList)||roundList.length===0)return false;
+  roundList.pop();
+  return true;
+}
+
 function undoRound(){
-  if(!gameActive||rounds.length===0)return;
-  rounds.pop();
+  if(!gameActive||!undoLastRound(rounds))return;
   currentRound=[0,0,0,0];
   renderGame();
   saveState();

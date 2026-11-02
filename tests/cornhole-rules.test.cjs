@@ -9,7 +9,8 @@ assert.ok(match, 'inline application script exists');
 
 const context = { navigator: {} };
 vm.runInNewContext(
-  match[1] + '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound };',
+  match[1].split("document.getElementById('name1').addEventListener('input',saveState);")[0] +
+    '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound };',
   context
 );
 const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound } = context.rules;

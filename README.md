@@ -21,6 +21,7 @@ Telefonbarát cornhole pontozó webapp. Egyetlen HTML fájl, telepítés, fiók 
 - **PWA-frissítésjelzés** – új verzió esetén külön Frissítés gomb jelenik meg, így a futó meccs közben nem történik automatikus újratöltés.
 - **Szabályok** – gyors ACL referencia a meccs közben.
 - **Offline** – egyetlen fájl, internet nélkül is fut.
+- **Telepítés és letöltés** – a Meccs fül alján *Telepítés a telefonra* gomb (ha a böngésző támogatja), *Letöltés (.html fájl)* és a GitHub-forráskód linkje. Már telepített appban ez a rész nem látszik.
 
 ## Használat
 
@@ -52,7 +53,9 @@ Az `index.html` közvetlenül fájlként megnyitva is teljes értékűen működ
 
 ## Használat telefonon
 
-Töltsd le az `index.html` fájlt a telefonra (GitHubon: *Raw* → mentés), majd nyisd meg a böngészőben. Internet nem kell hozzá. A böngésző menüjéből a *Hozzáadás a kezdőképernyőhöz* paranccsal parancsikon tehető ki.
+Az app **Telepítés a telefonra** gombjával (Android/Chrome) vagy a böngészőmenü *Hozzáadás a főképernyőhöz* parancsával (iPhone-on Safari: *Megosztás → Főképernyőhöz adás*) a kezdőképernyőre tehető, és utána offline is működik.
+
+Ha inkább fájlként szeretnéd, használd a **Letöltés (.html fájl)** gombot, vagy töltsd le az `index.html`-t a GitHubról (*Raw* → mentés), és nyisd meg a böngészőben. Internet nem kell hozzá, de a telepítéshez hasonló offline gyorsítótár fájlként megnyitva nem működik.
 
 ## Fájlok
 

@@ -84,11 +84,13 @@ Node.js 22 vagy újabb verzióval futtathatók:
 node --test
 ```
 
+A tesztek a következőket ellenőrzik: a pontozás (ACL kancellálás és egyszerű mód), a 4 zsák/csapat/kör korlát, a győztes meghatározása (döntetlennél a játék folytatódik), a kör visszavonása, a mentett adatok ellenőrzése, a HTML-escape, a játékosstatisztika (köztük a szóközök, a kis- és nagybetű, valamint a `constructor` és `__proto__` nevek kezelése), és hogy a magyar és az angol szövegkészlet kulcsai egyeznek.
+
 A GitHub Actions minden `main` ágra érkező push és pull request esetén automatikusan lefuttatja a teszteket.
 
 ## P2 fejlesztések – játékosok, archívum és nyelvváltás
 
-- A játékosnevek opcionálisak, csapatonként két mező áll rendelkezésre.
+- A játékosnevek opcionálisak, csapatonként két mező áll rendelkezésre. A statisztika a neveket szóközöktől megtisztítva, kis- és nagybetűre való tekintet nélkül azonosítja.
 - A mérkőzés akkor kerül az archívumba, amikor valamelyik csapat eléri a győzelmi feltételt.
 - A játékosstatisztika a megadott játékosnevek alapján számolja a lejátszott mérkőzéseket, győzelmeket és a csapat pontjait. Páros játék esetén a csapat eredményét mindkét játékoshoz hozzárendeli.
 - A mérkőzésarchívum legfeljebb 100 lezárt mérkőzést őriz.
@@ -101,8 +103,10 @@ A GitHub Actions minden `main` ágra érkező push és pull request esetén auto
 
 ## Mesterséges intelligencia
 
-> **A projekt fejlesztésében mesterséges intelligencia is közreműködött.** Az alkalmazás első változatát, az ikonokat és az eredeti dokumentációt az Anthropic **Claude** nevű MI-asszisztense készítette (Claude Code, Claude Sonnet 5.5), `nomadbeni` kérésére és irányításával. A pontozási, körvalidációs, visszavonási és csapatnév-escape logikához Node.js automatizált tesztek tartoznak. Teljes körű mobilböngészős tesztelés nem történt; hibák előfordulhatnak.
+> **A projekt fejlesztésében mesterséges intelligencia is közreműködött.** Az alkalmazás első változatát, az ikonokat és az eredeti dokumentációt az Anthropic **Claude** nevű MI-asszisztense készítette (Claude Code, Claude Sonnet 5.5), `nomadbeni` kérésére és irányításával. A pontozási, körvalidációs, visszavonási és csapatnév-escape logikához Node.js automatizált tesztek tartoznak. A P0–P2 csomagot később ugyanez a Claude felülvizsgálta és javította. Ennek során automatizált böngészős próbák is lefutottak (headless Chromium, 320–390 px széles nézet, magyar és angol felület, offline működés és PWA-frissítés), ezek azonban nem részei a repónak, valódi telefonokon pedig nem történt tesztelés; hibák előfordulhatnak.
 
 ## További fejlesztői közreműködés
 
 A projekt kódjának felülvizsgálatában és továbbfejlesztésében az **OpenAI ChatGPT** is közreműködött. A ChatGPT segítségével készültek el többek között a P0 és P1 fejlesztések: a zsákszám-korlátozás, a mérkőzés lezárásának javításai, a kör visszavonása, a böngészőalapú automatikus mentés, a biztonságosabb megjelenítés, továbbá a P2 csomag játékoskezelése, mérkőzésarchívuma, magyar–angol kezelőfelülete és PWA-frissítésjelzése, valamint az ezekhez tartozó automatizált tesztek és GitHub Actions munkafolyamat. A fejlesztési irányokat és a végleges módosításokat a projekt gazdája határozta meg és hagyta jóvá.
+
+Claude felülvizsgálata során javított hibák: a keskeny kijelzőn a magyar nyelvű felső sávból kicsúszott az EN gomb, az angol felület néhány felirata (a második csapat zsákcímkéi, a statisztika feliratai, a megerősítő kérdés) magyar maradt, a `constructor` és `__proto__` nevű játékos eltűnt a statisztikából és megrontotta a böngésző `Object` prototípusát, a mentett archívum `rounds` mezője ellenőrzés nélkül kerülhetett HTML-be, az oldal az első látogatáskor váratlanul újratöltött, a +/− gombok a 4 zsákos korlátnál nem jelezték a tiltást.

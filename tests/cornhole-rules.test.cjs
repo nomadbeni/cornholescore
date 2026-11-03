@@ -10,10 +10,10 @@ assert.ok(match, 'inline application script exists');
 const context = { navigator: {} };
 vm.runInNewContext(
   match[1].split("document.getElementById('name1').addEventListener('input',saveState);")[0] +
-    '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS };',
+    '\nglobalThis.rules = { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS, getScores, buildPlayerStats, normalizePlayerName };',
   context
 );
-const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS } = context.rules;
+const { getTeamBagCount, canAddBag, isRoundValid, getWinner, isValidRound, escapeHtml, undoLastRound, isValidArchivedMatch, t, WORDS, getScores, buildPlayerStats, normalizePlayerName } = context.rules;
 
 test('a team can record up to four bags in one round', () => {
   const round = [0, 0, 0, 0];
@@ -101,4 +101,64 @@ test('language lookup falls back to Hungarian for missing keys', () => {
   context.language = 'en';
   assert.equal(t('match'), 'Match');
   assert.equal(t('nonexistent-key'), 'nonexistent-key');
+});
+
+test('ACL mode cancels the two teams out in every round', () => {
+  context.gameMode = 'acl';
+  // 2 hole + 1 board = 7 against 1 hole + 1 board = 4 -> 3:0
+  context.rounds = [[2, 1, 1, 1]];
+  assert.deepEqual(Array.from(getScores()), [3, 0]);
+  // equal scores cancel completely
+  context.rounds = [[2, 1, 2, 1]];
+  assert.deepEqual(Array.from(getScores()), [0, 0]);
+  // the highest possible round is 4 holes (12) against nothing
+  context.rounds = [[4, 0, 0, 0], [0, 0, 3, 1]];
+  assert.deepEqual(Array.from(getScores()), [12, 10]);
+  // 4 holes against 4 holes cancel, 3 holes + 1 board against 4 boards -> 6:0
+  context.rounds = [[4, 0, 4, 0], [3, 1, 0, 4]];
+  assert.deepEqual(Array.from(getScores()), [6, 0]);
+});
+
+test('simple mode adds every bag without cancellation', () => {
+  context.gameMode = 'simple';
+  context.rounds = [[2, 1, 1, 1], [4, 0, 0, 0]];
+  assert.deepEqual(Array.from(getScores()), [19, 4]);
+  context.rounds = [];
+  assert.deepEqual(Array.from(getScores()), [0, 0]);
+  context.gameMode = 'acl';
+});
+
+test('archived matches need an integer round count and string player names', () => {
+  const valid = {
+    date: '2026-11-02T10:00:00.000Z', mode: 'simple',
+    team1: 'Red', team2: 'Blue', players1: [], players2: ['B'],
+    score1: 21, score2: 18, winner: 0, rounds: 8
+  };
+  assert.equal(isValidArchivedMatch(valid), true);
+  assert.equal(isValidArchivedMatch({ ...valid, rounds: '<img src=x onerror=alert(1)>' }), false);
+  assert.equal(isValidArchivedMatch({ ...valid, rounds: -1 }), false);
+  assert.equal(isValidArchivedMatch({ ...valid, players1: [{}] }), false);
+  assert.equal(isValidArchivedMatch({ ...valid, date: 'nem dátum' }), false);
+});
+
+test('player statistics trim names, ignore case and survive special names', () => {
+  const base = { date: '2026-11-02T10:00:00.000Z', mode: 'acl', team1: 'R', team2: 'B', rounds: 5 };
+  const stats = buildPlayerStats([
+    { ...base, players1: [' Anna', 'constructor'], players2: ['__proto__', 'Bela'], score1: 21, score2: 10, winner: 0 },
+    { ...base, players1: ['anna', 'Anna'], players2: ['Bela'], score1: 8, score2: 21, winner: 1 }
+  ]);
+  const byName = Object.fromEntries(stats.map((p) => [p.name, p]));
+  assert.deepEqual(Object.keys(byName).sort(), ['Anna', 'Bela', '__proto__', 'constructor'].sort());
+  assert.deepEqual({ ...byName.Anna }, { name: 'Anna', played: 2, wins: 1, points: 29 });
+  assert.deepEqual({ ...byName.Bela }, { name: 'Bela', played: 2, wins: 1, points: 31 });
+  assert.equal(byName.constructor.wins, 1);
+  assert.equal(({}).played, undefined, 'Object.prototype is not polluted');
+  assert.equal(({}).points, undefined);
+  assert.equal(normalizePlayerName('  Kis   Péter '), 'Kis Péter');
+});
+
+test('every UI text key exists in both languages', () => {
+  const hu = Object.keys(WORDS.hu).sort();
+  const en = Object.keys(WORDS.en).sort();
+  assert.deepEqual(hu, en);
 });
